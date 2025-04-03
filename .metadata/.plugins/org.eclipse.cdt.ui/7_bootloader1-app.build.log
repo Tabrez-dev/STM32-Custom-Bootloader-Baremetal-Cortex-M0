@@ -1,0 +1,17 @@
+23:02:52 **** Incremental Build of configuration Debug for project 7_bootloader1-app ****
+make -j12 all 
+arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DSTM32 -DSTM32F0 -DSTM32F072RBTx -DSTM32F072B_DISCO -DSTM32F072xB -c -I../Inc -I..//chip_headers/CMSIS/Include -I..//chip_headers/CMSIS/Device/ST/STM32F0xx/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Src/main.o"
+arm-none-eabi-gcc -o "7_bootloader1-app.elf" @"objects.list"   -mcpu=cortex-m0 -T"/home/tabrez/Document/STM32CubeIDE/Bootloader_baremetal/7_bootloader1-app/STM32F072RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="7_bootloader1-app.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 7_bootloader1-app.elf
+ 
+arm-none-eabi-size  7_bootloader1-app.elf 
+arm-none-eabi-objdump -h -S 7_bootloader1-app.elf  > "7_bootloader1-app.list"
+   text	   data	    bss	    dec	    hex	filename
+   5472	     92	   1908	   7472	   1d30	7_bootloader1-app.elf
+Finished building: default.size.stdout
+ 
+Finished building: 7_bootloader1-app.list
+ 
+
+23:02:53 Build Finished. 0 errors, 0 warnings. (took 234ms)
+

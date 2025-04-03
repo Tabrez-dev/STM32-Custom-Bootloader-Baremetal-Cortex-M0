@@ -1,0 +1,208 @@
+//Bootloader-2
+#include <stdio.h>
+#include "stm32f0xx.h"
+#include "uart.h"
+#include "timebase.h"
+#include "bsp.h"
+bool btn_state;
+#define APPLICATION_ADDRESS 		0x08008000
+#define MSP_VERIFY_MASK				0xFFFFC000
+#define EMPTY_MEM					0xFFFFFFFF
+
+#define SECTOR0_BASE_ADDRESS		0x08000000 /*Bootloader sector*/
+#define SECTOR1_BASE_ADDRESS		0x08002000 /*LD3 sector*/
+#define SECTOR2_BASE_ADDRESS		0x08004000 /*LD4 sector*/
+#define SECTOR3_BASE_ADDRESS		0x08006000 /*LD6 sector*/
+#define SECTOR4_BASE_ADDRESS		0x08008000 /*LD5 sector*/
+
+#define LD3_APP_ADDRESS				SECTOR1_BASE_ADDRESS
+#define LD4_APP_ADDRESS				SECTOR2_BASE_ADDRESS
+#define LD6_APP_ADDRESS				SECTOR3_BASE_ADDRESS
+#define LD5_APP_ADDRESS				SECTOR4_BASE_ADDRESS
+
+//#define MEM_CHECK_V1
+#define MEM_CHECK_V2
+typedef void(*func_ptr)(void);
+volatile char g_ch_key;
+volatile uint8_t g_un_key;
+
+typedef enum
+{
+	LD3_APP = 1,
+	LD4_APP,
+	LD6_APP,
+	LD5_APP,
+}SYS_APPS;
+
+static void process_btldr_cmds(SYS_APPS curr_app);
+static void uart_callback(void);
+void USART1_IRQHandler(void);
+
+static void jump_to_app(uint32_t addr_value)
+{
+	uint32_t app_start_address;
+	func_ptr jump_to_app;
+	printf("Bootloader started....\n\r");
+	delay(300);
+	/*Version 1: hardcoded version by looking where msp is located usign mem browser*/
+#ifdef MEM_CHECK_V1
+	if(((*(uint32_t*)addr_value) & MSP_VERIFY_MASK) == 0x20004000)
+#endif
+
+#ifdef MEM_CHECK_V2
+	if((*(uint32_t*)addr_value) != EMPTY_MEM)
+#endif
+	{
+		//The compiler needs to know that 0x08008004 is a memory address storing a uint32_t value.
+		//Without casting, the compiler would not know how to read from that address correctly.
+		app_start_address = *(uint32_t*)(addr_value+4);
+		// converts this raw address into a callable function pointer.
+		jump_to_app= (func_ptr)app_start_address;
+		/*init main stack ptr*/
+		__set_MSP(*(uint32_t*)addr_value);
+		/*Jump to app()*/
+		jump_to_app();//jumps to 0x08008000
+	}else
+	{
+		printf("No application found....\n\r");
+	}
+}
+struct btl_common_apis
+{
+	void(*led_init)(void);
+	void(*led_toggle)(uint32_t dly);
+	void(*led_on)(void);
+	void(*led_off)(void);
+	void(*system_uart_init)(void);
+	void(*button_init)(void);
+	bool(*get_btn_state)(void);
+	void(*timebase_init)(void);
+};
+struct btl_common_apis common_apis __attribute((section(".COMMON_APIS")))={
+		led_init,
+		led_toggle,
+		led_on,
+		led_off,
+		system_uart_init,
+		button_init,
+		get_btn_state,
+		timebase_init
+};
+int main()
+{
+	//	/*Enable clock access to gpio c*/
+	//	RCC->AHBENR |= GPIOCEN;
+	//	/*Set PC6 to output mode*/
+	//	GPIOC->MODER |=(1U<<12);
+	//	GPIOC->MODER &=~(1U<<13);
+	/*Initialise  debug UART*/
+	system_uart_init();
+	/*initialise timebase*/
+	timebase_init();
+	/*init led*/
+	led_init();
+	/*Init push button*/
+	button_init();
+
+	if(get_btn_state())
+	{
+		/*Button is pressed*/
+		printf("DBG: Button Pressed\n\r");
+		printf("==================\n\r");
+		printf("==================\n\r");
+		printf("==================\n\r");
+		printf("==================\n\r");
+		printf("==================\n\r");
+		printf("\n\r");
+		printf("Bootloader Menu \n\r");
+		printf("\n");
+		printf("==================\n\r");
+		printf("==================\n\r");
+		printf("==================\n\r");
+
+	    printf("Available commands:\n\r");
+	    printf("1      ==> Run LD3 Application\n\r");
+	    printf("2      ==> Run LD4 Application\n\r");
+	    printf("3      ==> Run LD6 Application\n\r");
+	    printf("4      ==> Run LD5 Application\n\r");
+
+		while(1)
+		{
+			process_btldr_cmds(g_un_key);
+		}
+	}
+	else
+	{
+		/*Button is not pressed*/
+		jump_to_app(LD3_APP_ADDRESS);//If button is not pressed, jump to the default application
+
+	}
+	while(1)
+	{
+	    /* Infinite loop to ensure bootloader continues running if no action is taken */
+	}
+}
+
+static void process_btldr_cmds(SYS_APPS curr_app)
+{
+    switch(curr_app)
+    {
+    case LD3_APP:
+        printf("LD3 App selected \n\r");
+        jump_to_app(LD3_APP_ADDRESS);
+        break;
+    case LD4_APP:
+        printf("LD4 App selected \n\r");
+        jump_to_app(LD4_APP_ADDRESS);
+        break;
+    case LD6_APP:
+        printf("LD6 App selected \n\r");
+        jump_to_app(LD6_APP_ADDRESS);
+        break;
+    case LD5_APP:
+        printf("LD5 (Factory) App selected \n\r");
+        jump_to_app(LD5_APP_ADDRESS);
+        break;
+    default:
+        printf("Invalid selection! Please choose a valid app.\n\r");
+        break;
+    }
+}
+
+
+static void uart_callback(void)
+{
+    g_ch_key = USART1->RDR; // Read received character
+
+    if (g_ch_key == '1')
+    {
+        g_un_key = 1;
+    }
+    else if (g_ch_key == '2')
+    {
+        g_un_key = 2;
+    }
+    else if (g_ch_key == '3')
+    {
+        g_un_key = 3;
+    }
+    else if (g_ch_key == '4')
+    {
+        g_un_key = 4;
+    }
+    else
+    {
+        printf("Invalid Key Pressed! Please enter 1, 2, 3, or 4.\n\r");
+    }
+}
+
+
+void USART1_IRQHandler(void)
+{
+    if (USART1->ISR & SR_RXNE) {
+        uart_callback();
+    } else {
+        printf("RXNE not set!\n\r");
+    }
+}
+

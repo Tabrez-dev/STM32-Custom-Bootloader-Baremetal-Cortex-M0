@@ -1,0 +1,139 @@
+
+#include <stdint.h>
+#include<stdio.h>
+#include "main.h"
+extern void initialise_monitor_handles(void);
+
+void task1_handler(void);
+void task2_handler(void);
+void task3_handler(void);
+void task4_handler(void);
+
+
+void init_systick_timer(uint32_t tick_hz);
+__attribute__((naked)) void init_scheduler_stack(uint32_t sched_top_of_stack);
+void init_tasks_stack(void);
+__attribute__((naked)) void switch_sp_to_psp(void);
+
+uint32_t psp_of_tasks[MAX_TASKS]={T1_STACK_START,T2_STACK_START,T3_STACK_START,T4_STACK_START};
+uint32_t task_handlers[MAX_TASKS];
+uint8_t current_task=0;
+//1. DEFINE MACROS
+//2. SYSTICK OF 1MS, processor clock= systick timer count clock
+int main(void)
+{
+	initialise_monitor_handles();
+	//0. enable processor faults there are none in cortex m0
+	//1. init MSP for sched stack
+	init_scheduler_stack(SCHED_STACK_START);
+	//2. capture addresses of different task haandlers
+	task_handlers[0]= (uint32_t)task1_handler;
+	task_handlers[1]= (uint32_t)task2_handler;
+	task_handlers[2]= (uint32_t)task3_handler;
+	task_handlers[3]= (uint32_t)task4_handler;
+	//3. store dummy frames
+	init_tasks_stack();
+	//4. generate exceptions of systick
+	init_systick_timer(TICK_HZ);
+	//5. change stack pointer to PSP till here SP was MSP
+	switch_sp_to_psp();
+
+	task1_handler();
+	for(;;);
+}
+
+void task1_handler(void){
+
+	while(1){
+		printf("This is task 1\n");
+	}
+}
+void task2_handler(void){
+
+	while(1){
+		printf("This is task 1\n");
+	}
+}
+void task3_handler(void){
+
+	while(1){
+		printf("This is task 1\n");
+	}
+}
+void task4_handler(void){
+
+	while(1){
+		printf("This is task 1\n");
+	}
+}
+void init_systick_timer(uint32_t tick_hz){
+	uint32_t *pSRVR = (uint32_t *) 0xE000E014;
+	uint32_t *pSCSR = (uint32_t *) 0xE000E010;
+	uint32_t count_value=(SYSTICK_TIM_CLK/tick_hz)-1;
+	//clear value of RVR
+	*pSRVR &= ~(0x00FFFFFF);
+	//load the value in RVR
+	*pSRVR |= count_value;
+	//do some settings, configure CSR
+	//TICKINT(1) CLK SOURCE(2) ENABLE(0)
+	*pSCSR |= (1<<1); //enable Systick exception request
+	*pSCSR |= (1<<2); //indicates clock source, processor clock source
+
+	//enable systcik
+	*pSCSR |= (1<<0);
+
+}
+//SP is special register so use inline assembly and naked fucntion to skip epilogue prilogue
+__attribute__((naked)) void init_scheduler_stack(uint32_t sched_top_of_stack){
+	//__asm volatile("MSR MSP,R0");
+	//1. init sp as MSP
+	__asm volatile("MSR MSP,%0": : "r" (sched_top_of_stack) : );
+	__asm volatile("BX LR");//bx copies value of LR into PC
+}
+uint32_t get_psp_value(void){
+	return psp_of_tasks[current_task];
+}
+__attribute__((naked)) void switch_sp_to_psp(void){
+	//1. intialise PSP with TASK1 stack start address
+	__asm volatile ("MOV R1, LR");	//preserve LR which conencts back to main()
+	//get the value of psp of current task
+	__asm volatile ("BL get_psp_value");//LR value will get curupted
+	__asm volatile ("MSR PSP,R0");//init PSP
+	__asm volatile ("MOV LR, R1");	//preserve LR which conencts back to main()
+
+	//2. change SP to PSP using CONTROL register
+	__asm volatile ("MOV R0,#0X02");
+	__asm volatile ("MSR CONTROL,R0");
+	__asm volatile ("BX LR");
+
+	//NOTE: In Cortex-M0, the POP instruction only allows popping from registers R0-R7.
+}
+
+void SysTick_Handler(void){
+
+
+}
+void init_tasks_stack(void){
+	uint32_t *pPSP;
+	for(int i=0;i<MAX_TASKS;i++){
+		pPSP=(uint32_t *) psp_of_tasks[i];
+		//FD stack i.e decrement first and then store
+		pPSP--;
+		*pPSP=DUMMY_XPSR;//0x00100000
+
+		pPSP--; //PC
+		*pPSP=task_handlers[i];
+
+		pPSP--; //LR
+		*pPSP=0xFFFFFFFD;//thread mode and use PSP
+
+		for(int j=0;j<13;j++){
+			pPSP--;
+			*pPSP=0;
+		}
+		psp_of_tasks[i]=(uint32_t)pPSP;//preserve value of PSP
+	}
+
+}
+
+

@@ -1,0 +1,10 @@
+14:54:07 **** Incremental Build of configuration Debug for project task_shceduler ****
+make -j12 all 
+arm-none-eabi-size  task_shceduler.elf 
+   text	   data	    bss	    dec	    hex	filename
+   5368	    116	   2092	   7576	   1d98	task_shceduler.elf
+Finished building: default.size.stdout
+ 
+
+14:54:07 Build Finished. 0 errors, 0 warnings. (took 234ms)
+

@@ -1,0 +1,17 @@
+14:16:29 **** Incremental Build of configuration Debug for project 2_Blink_LD4 ****
+make -j12 all 
+arm-none-eabi-gcc "../Src/main.c" -mcpu=cortex-m0 -std=gnu11 -g3 -DDEBUG -DSTM32 -DSTM32F0 -DSTM32F072RBTx -DSTM32F072B_DISCO -DSTM32F072xB -c -I../Inc -I..//chip_headers/CMSIS/Include -I..//chip_headers/CMSIS/Device/ST/STM32F0xx/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity -MMD -MP -MF"Src/main.d" -MT"Src/main.o" --specs=nano.specs -mfloat-abi=soft -mthumb -o "Src/main.o"
+arm-none-eabi-gcc -o "2_Blink_LD4.elf" @"objects.list"   -mcpu=cortex-m0 -T"/home/tabrez/Document/STM32CubeIDE/Bootloader_Blink_LED/2_Blink_LD4/STM32F072RBTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="2_Blink_LD4.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: 2_Blink_LD4.elf
+ 
+arm-none-eabi-size  2_Blink_LD4.elf 
+arm-none-eabi-objdump -h -S 2_Blink_LD4.elf  > "2_Blink_LD4.list"
+   text	   data	    bss	    dec	    hex	filename
+   5072	     92	   1900	   7064	   1b98	2_Blink_LD4.elf
+Finished building: default.size.stdout
+ 
+Finished building: 2_Blink_LD4.list
+ 
+
+14:16:29 Build Finished. 0 errors, 0 warnings. (took 438ms)
+

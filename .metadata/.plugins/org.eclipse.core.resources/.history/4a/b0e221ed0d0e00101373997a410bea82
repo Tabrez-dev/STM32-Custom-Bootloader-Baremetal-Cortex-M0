@@ -1,0 +1,86 @@
+//Bootloader-2
+#include <stdio.h>
+#include "stm32f0xx.h"
+#include "uart.h"
+#include "timebase.h"
+#include "bsp.h"
+/*
+ * MODULES
+ * FPU
+ * UART
+ * GPIO
+ * TIMEBASE
+ * ADC
+ * GPIO(BSP)*/
+
+#define GPIOCEN (1U<<19)
+#define PIN6 (1U<<6)
+#define LED_PIN PIN6
+bool btn_state;
+
+#define APPLICATION_ADDRESS 		0x08008000
+#define MSP_VERIFY_MASK				0xFFFFC000
+#define EMPTY_MEM					0xFFFFFFFF
+
+//#define MEM_CHECK_V1
+#define MEM_CHECK_V2
+typedef void(*func_ptr)(void);
+//20004000
+void jmp_to_default_app(void)
+{
+	uint32_t app_start_address;
+	func_ptr jump_to_app;
+	printf("Bootloader started....\n\r");
+	delay(300);
+	/*Version 1: hardcoded version by looking where msp is located usign mem browser*/
+#ifdef MEM_CHECK_V1
+	if(((*(uint32_t*)APPLICATION_ADDRESS) & MSP_VERIFY_MASK) == 0x20004000)
+#endif
+
+#ifdef MEM_CHECK_V2
+	if((*(uint32_t*)APPLICATION_ADDRESS) != EMPTY_MEM)
+#endif
+	{
+		//The compiler needs to know that 0x08008004 is a memory address storing a uint32_t value.
+		//Without casting, the compiler would not know how to read from that address correctly.
+		app_start_address = *(uint32_t*)(APPLICATION_ADDRESS+4);
+		// converts this raw address into a callable function pointer.
+		jump_to_app= (func_ptr)app_start_address;
+		/*init main stack ptr*/
+		__set_MSP(*(uint32_t*)APPLICATION_ADDRESS);
+		/*Jump to app()*/
+		jump_to_app();//jumps to 0x08008000
+	}else
+	{
+		printf("No application found....\n\r");
+	}
+}
+struct btl_common_apis
+{
+
+};
+struct btl_common_apis common_apis __attribute((section(".COMMON_APIS")))={
+
+};
+int main()
+{
+//	/*Enable clock access to gpio c*/
+//	RCC->AHBENR |= GPIOCEN;
+//	/*Set PC6 to output mode*/
+//	GPIOC->MODER |=(1U<<12);
+//	GPIOC->MODER &=~(1U<<13);
+	/*Initialise  debug UART*/
+	debug_uart_init();
+	/*initialise timebase*/
+	timebase_init();
+	/*init led*/
+	//led_init();
+	/*Init push button*/
+	//button_init();
+
+	jmp_to_default_app();
+	while(1){
+
+	}
+}
+

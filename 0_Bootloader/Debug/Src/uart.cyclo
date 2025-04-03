@@ -1,0 +1,6 @@
+/home/tabrez/Document/STM32CubeIDE/Bootloader_baremetal/5_linkerscript-sections/chip_headers/CMSIS/Include/core_cm0.h:623:22:__NVIC_EnableIRQ	2
+../Src/uart.c:16:5:__io_putchar	1
+../Src/uart.c:22:6:system_uart_init	1
+../Src/uart.c:60:13:uart_write	2
+../Src/uart.c:68:17:compute_uart_bd	1
+../Src/uart.c:73:13:uart_set_baud_rate	1

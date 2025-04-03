@@ -1,0 +1,2 @@
+../Src/uart.c:7:5:__io_putchar	16	static
+../Src/uart.c:14:13:uart_write	16	static

@@ -1,0 +1,6 @@
+../Src/bsp.c:11:6:led_init	8	static
+../Src/bsp.c:35:6:led_toggle	16	static
+../Src/bsp.c:42:6:led_on	8	static
+../Src/bsp.c:48:6:led_off	8	static
+../Src/bsp.c:55:6:button_init	8	static
+../Src/bsp.c:65:6:get_btn_state	8	static

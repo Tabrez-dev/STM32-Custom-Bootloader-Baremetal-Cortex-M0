@@ -1,0 +1,10 @@
+12:02:54 **** Incremental Build of configuration Debug for project Bootloader_Baremetal ****
+make -j12 all 
+arm-none-eabi-size  Bootloader_Baremetal.elf 
+   text	   data	    bss	    dec	    hex	filename
+    548	      0	   1568	   2116	    844	Bootloader_Baremetal.elf
+Finished building: default.size.stdout
+ 
+
+12:02:54 Build Finished. 0 errors, 0 warnings. (took 137ms)
+

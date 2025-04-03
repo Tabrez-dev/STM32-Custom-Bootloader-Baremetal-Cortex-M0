@@ -1,0 +1,15 @@
+#include "uart.h"
+#define GPIOAEN 	(1U<<17)
+void debug_uart_init(void){
+	/*Enable clock access to GPIOA*/
+	RCC->AHB1ENR |= GPIOAEN;
+	/*Set the mode of PA9 and PA10 to AF mode*/
+	/*Set AF type to AF1(USART1_TX/RX)*/
+	GPIOA->MODER &= ~(1U<<18);
+	GPIOA->MODER |= (1U<<19);
+
+	/*Enable clock access to USART1*/
+	/*Configure uart baud rate*/
+	/*Configure transfer direction*/
+	/*Enable UART module*/
+}

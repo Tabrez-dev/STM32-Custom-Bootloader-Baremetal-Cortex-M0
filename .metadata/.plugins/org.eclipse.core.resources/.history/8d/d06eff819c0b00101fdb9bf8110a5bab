@@ -1,0 +1,27 @@
+#include "timebase.h"
+#include "stm32f0xx.h"
+
+#define CTRL_ENABLE		(1U<<0)
+#define CTRL_TICKINT	(1U<<1)
+#define CTRL_CLKSRC		(1U<<2)
+#define CTRL_COUNTFLAG	(1U<<16)
+
+#define ONE_SEC_LOAD 	8000000
+
+void timebase_int(void)
+{
+	/*Disable global interrupts*/
+	__disable_irq();
+	/*Load the timer num of clock cycles per second*/
+	SysTick->LOAD = ONE_SEC_LOAD-1;
+	/*Clear systick current val reg*/
+	SysTick->VAL=0;
+	/*Select internal clock source*/
+	SysTick->CTRL=CTRL_CLKSRC;
+	/*enable interrupt*/
+	SysTick->CTRL |= CTRL_TICKINT;
+	/*Enable systick*/
+	SysTick->CTRL |= CTRL_ENABLE;
+	/*Enable global interrupt*/
+	__enable_irq();
+}

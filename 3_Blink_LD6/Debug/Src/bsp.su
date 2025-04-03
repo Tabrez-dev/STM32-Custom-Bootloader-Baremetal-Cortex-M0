@@ -1,0 +1,2 @@
+../Src/bsp.c:7:6:led_on	8	static
+../Src/bsp.c:13:6:led_off	8	static
