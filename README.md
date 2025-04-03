@@ -43,13 +43,13 @@ https://github.com/user-attachments/assets/28c10977-9d8a-4b6a-8dab-a2a20c3ca114
 
 ✅ **Solution:** Disabling hardware flow control in Minicom resolved the issue, allowing TX (sending commands from keyboard of PC) to work correctly.
 
-### 3️⃣ **Function Pointer Struct Must Be Identical in Bootloader & Firmware**
+### 3️⃣ **Custom memory functions were not working as expected**
 **Problem:** A **struct holding function pointers that point to commonly used functions accross all the firmwares** was stored in a shared memory region, but modifying the struct (e.g., changing order, adding/removing members) in the respective firmwares led to unpredictable function calls.
 
-✅ **Solution:** The struct definition must be **identical in both Bootloader and Firmware**.
+✅ **Solution:** The struct definition must be **identical in both Bootloader and Firmware**. Function pointers inside a struct rely on a **fixed memory layout**. If the struct is modified inconsistently across firmware versions, the function pointers will point to **incorrect or invalid addresses**, leading to crashes or unexpected behavior.
 
 ## Build & Flash Instructions
-Follow STM32CubeIDE build and flash process.
+Followed STM32CubeIDE build and flash process and debugged using the built in debug software.
 
 ## Contributing
 Open to contributions! Feel free to **submit PRs** or open an **Issue** if you find something to improve. 🚀
