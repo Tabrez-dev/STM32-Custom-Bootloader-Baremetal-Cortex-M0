@@ -7,8 +7,8 @@
 
 bool btn_state;
 #define APPLICATION_ADDRESS 		0x08008000
-#define MSP_VERIFY_MASK				0xFFFFC000
-#define EMPTY_MEM					0xFFFFFFFF
+#define MSP_VERIFY_MASK			0xFFFFC000
+#define EMPTY_MEM			0xFFFFFFFF
 
 #define SECTOR0_BASE_ADDRESS		0x08000000 /*Bootloader sector*/
 #define SECTOR1_BASE_ADDRESS		0x08002000 /*LD3 sector*/
