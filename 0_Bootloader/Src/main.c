@@ -56,6 +56,7 @@ static void jump_to_app(uint32_t addr_value)
 	{
 		//The compiler needs to know that 0x08008004 is a memory address storing a uint32_t value.
 		//Without casting, the compiler would not know how to read from that address correctly.
+		//Reset Handler of the app
 		app_start_address = *(uint32_t*)(addr_value+4);
 		// converts this raw address into a callable function pointer.
 		jump_to_app= (func_ptr)app_start_address;
